@@ -25,7 +25,7 @@ void Galil::DigitalOutput(uint16_t value) {
 }
 
 void Galil::DigitalByteOutput(bool bank, uint8_t value) {
-
+	//
 }
 
 void Galil::DigitalBitOutput(bool val, uint8_t bit) {
