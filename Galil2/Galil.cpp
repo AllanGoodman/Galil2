@@ -10,7 +10,7 @@ Galil::Galil() {
 }
 
 Galil::Galil(EmbeddedFunctions* Funcs, GCStringIn address) {
-
+	Functions = Funcs;
 }
 
 Galil::~Galil() {
@@ -21,7 +21,7 @@ Galil::~Galil() {
 
 // DIGITAL OUTPUTS
 void Galil::DigitalOutput(uint16_t value) {
-
+	
 }
 
 void Galil::DigitalByteOutput(bool bank, uint8_t value) {
@@ -44,11 +44,16 @@ uint8_t Galil::DigitalByteInput(bool bank) {
 }
 
 bool Galil::DigitalBitInput(uint8_t bit) {
-
+	//Read a bit from one of the digital inputs specified by bit.
 }
 
 bool Galil::CheckSuccessfulWrite() {
-
+	if (success) {
+		return 1;
+	}
+	else {
+		return 0;
+	}
 }
 
 float Galil::AnalogInput(uint8_t channel) {
@@ -75,25 +80,29 @@ int Galil::ReadEncoder() {
 }
 
 void Galil::setSetPoint(int s) {
-
+	setPoint = s;
 }
 
 void Galil::setKp(double gain) {
-
+	ControlParameters[0] = gain;
 }
 
 void Galil::setKi(double gain) {
-
+	ControlParameters[1] = gain;
 }
 
 void Galil::setKd(double gain) {
-
+	ControlParameters[2] = gain;
 }
 
-void Galil::PositionControl(bool debug, int Motorchannel) {
+/*
 
+No need to implement, defined in GalilControl.lib
+
+void Galil::PositionControl(bool debug, int Motorchannel) {
+	
 }
 
 void Galil::SpeedControl(bool debug, int Motorchannel) {
 
-}
+}*/
