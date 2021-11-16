@@ -1,9 +1,5 @@
 #include "Galil.h"
 
-int main() {
-
-}
-
 
 Galil::Galil() {
 
@@ -11,17 +7,35 @@ Galil::Galil() {
 
 Galil::Galil(EmbeddedFunctions* Funcs, GCStringIn address) {
 	Functions = Funcs;
+	g = 0;
+	ReadBuffer[0] = {};
+	ControlParameters[0] = {};
+	setPoint = 0;
+	Command[0] = {};
+	
+	
+	
+	
+	
+	GOpen("192.168.0.120 -d", &g);
+	if (g != 0) {
+		std::cout << "Connected!" << std::endl;
+	}
+	else {
+		std::cout << "Failed to connect" << std::endl;
+	}
+
 }
 
 Galil::~Galil() {
-
+	GClose(g);
 }
 
 
 
 // DIGITAL OUTPUTS
 void Galil::DigitalOutput(uint16_t value) {
-	GWrite();
+
 }
 
 void Galil::DigitalByteOutput(bool bank, uint8_t value) {
@@ -40,7 +54,7 @@ uint16_t Galil::DigitalInput() {
 }
 
 uint8_t Galil::DigitalByteInput(bool bank) {
-	puts
+
 }
 
 bool Galil::DigitalBitInput(uint8_t bit) {
@@ -62,7 +76,7 @@ bool Galil::CheckSuccessfulWrite() {
 
 //Analog Functions
 float Galil::AnalogInput(uint8_t channel) {
-	GRead();
+
 }
 
 void Galil::AnalogOutput(uint8_t channel, double voltage) {
@@ -79,7 +93,9 @@ void Galil::AnalogInputRange(uint8_t channel, uint8_t range) {
 
 // ENCODER / CONTROL FUNCTIONS
 void Galil::WriteEncoder() {
-
+	char command[128] = "";
+	sprintf(command, "WE %d", bit);
+	Functions->GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), 0)
 }
 
 int Galil::ReadEncoder() {
