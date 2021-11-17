@@ -54,7 +54,12 @@ void Galil::DigitalOutput(uint16_t value) {
 	//OP1 makes digital inputs = 1
 	//OP4 makes digital inputs = 4 etc
 	char command[128] = "";
-	sprintf_s(command, "OP%d;", value);
+	if (value < 256) {
+		sprintf_s(command, "OP%d;", value);
+	}
+	else {
+		sprintf_s(command, "OP255,%d;", (value - 255));
+	}
 	Functions->GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), 0);
 }
 
@@ -118,11 +123,30 @@ uint8_t Galil::DigitalByteInput(bool bank) {
 	uint8_t store = 0x00;
 	int initial = 0;
 	if (bank) {
-		initial = 15;
+		//initial = 15;
+		for (int i = 15; i > 8; i--) {
+			bool store_bit = DigitalBitInput(i);
+			if (store_bit == 1) {
+				store = ((store << 1) | 0x1);
+			}
+			else {
+				store <<= 1;
+			}
+		}
 	}
 	else {
-		initial = 8;
+		//initial = 8;
+		for (int i = 8; i > -1; i--) {
+			bool store_bit = DigitalBitInput(i);
+			if (store_bit == 1) {
+				store = ((store << 1) | 0x1);
+			}
+			else {
+				store <<= 1;
+			}
+		}
 	}
+	/*
 	for (int i = initial; i > initial-9; i--) {
 		bool store_bit = DigitalBitInput(i);
 		if (store_bit == 1) {
@@ -131,7 +155,7 @@ uint8_t Galil::DigitalByteInput(bool bank) {
 		else {
 			store <<= 1;
 		}
-	}
+	}*/
 	//std::cout << std::bitset<8>(store) << std::endl;
 	return store;
 }
@@ -218,7 +242,8 @@ int Galil::ReadEncoder() {
 	GSize returnedNum = 1;
 	GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), &returnedNum);
 	intbuf[0] = ReadBuffer[1];
-	int returnable = atoi(intbuf);
+	int returnable = atoi(ReadBuffer);
+	std::cout << returnable << std::endl;
 	return returnable;
 }
 
