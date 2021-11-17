@@ -2,33 +2,48 @@
 
 
 Galil::Galil() {
+	g = 0;
+	setPoint = 0;
+	Functions = new EmbeddedFunctions;
 
+	for (int i = 0; i < 1024; i++) {
+		ReadBuffer[i] = { NULL };
+	}
+
+	for (int i = 0; i < 3; i++) {
+		ControlParameters[i] = 0;
+	}
 }
 
 Galil::Galil(EmbeddedFunctions* Funcs, GCStringIn address) {
 	Functions = Funcs;
+	Functions = new EmbeddedFunctions;
 	g = 0;
-	ReadBuffer[0] = {};
-	ControlParameters[0] = {};
 	setPoint = 0;
-	Command[0] = {};
 	
+	for (int i = 0; i < 1024; i++) {
+		ReadBuffer[i] = { NULL };
+	}
 	
+	for (int i = 0; i < 3; i++) {
+		ControlParameters[i] = 0;
+	}
 	
-	
-	
-	GOpen("192.168.0.120 -d", &g);
-	if (g != 0) {
+	GReturn galilStatus;
+	galilStatus = Functions->GOpen(address, &g);
+	if (g == G_NO_ERROR) {
 		std::cout << "Connected!" << std::endl;
 	}
 	else {
 		std::cout << "Failed to connect" << std::endl;
 	}
-
 }
 
 Galil::~Galil() {
-	GClose(g);
+	if (g) {
+		Functions->GClose(g);
+		delete Functions;
+	}
 }
 
 
@@ -38,18 +53,21 @@ void Galil::DigitalOutput(uint16_t value) {
 	//USES OP.
 	//OP1 makes digital inputs = 1
 	//OP4 makes digital inputs = 4 etc
+	char command[128] = "";
+	sprintf_s(command, "OP%d;", value);
+	Functions->GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), 0);
 }
 
 void Galil::DigitalByteOutput(bool bank, uint8_t value) {
 	//print high or low byte (bank = 1 or 0 respectively)
-	//Just loop through digitalbitinput 8 times for 7-0 or 15-8
+	//Just use OP, first argument is low byte, 2nd arg is high byte
+	
 }
 
 void Galil::DigitalBitOutput(bool val, uint8_t bit) {
 	//USE SB for val = 1
 	//USE CB for val = 0
 	//SB1 sets digital bit 1 to 1 etc
-
 
 	//DOUBLE CHECK THIS!
 
@@ -64,18 +82,36 @@ void Galil::DigitalBitOutput(bool val, uint8_t bit) {
 // DIGITAL INPUTS
 uint16_t Galil::DigitalInput() {
 	//loop 16 times through digitalbitinput, getting all digital inputs.
+	uint16_t store = 0x00;
+	for (int i = 0; i < 16; i++) {
+		bool store_bit = DigitalBitInput(i);
+		std::cout << store_bit << std::endl;
+		if (store_bit == 1) {
+			(store <<= 1) | 0x1;
+			std::cout << "doin a thing" << std::endl;
+		}
+		else {
+			store <<= 1;
+		}
+		//std::cout << "store = " << store << std::endl;
+	}
+	return store;
 }
 
 uint8_t Galil::DigitalByteInput(bool bank) {
 	//Return high or low byte (bank = 1 or 0 respectively)
 	//Just loop through digitalbitinput 8 times for 7-0 or 15-8
+	return 0;
 }
 
 bool Galil::DigitalBitInput(uint8_t bit) {
 	//Read a bit from one of the digital inputs specified by bit.
 	char command[128] = "";
-	sprintf(command, "MG @IN[%d]", bit);
-	Functions->GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), 0);
+	GSize returnedNum = 1;
+	sprintf_s(command, "MG @IN[%d];", bit);
+	Functions->GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), &returnedNum);
+	//std::cout << ReadBuffer << std::endl;
+	return (ReadBuffer[1]-48);
 }
 
 bool Galil::CheckSuccessfulWrite() {
@@ -91,11 +127,12 @@ bool Galil::CheckSuccessfulWrite() {
 //Analog Functions
 float Galil::AnalogInput(uint8_t channel) {
 	//USE MG @AN[channel] to return the analog values!
+	return 0;
 }
 
 void Galil::AnalogOutput(uint8_t channel, double voltage) {
 	char command[128];
-	sprintf(command, "AO %d,%f", channel, voltage);
+	sprintf_s(command, "AO %d,%f;", channel, voltage);
 	GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), 0);
 }
 
@@ -129,6 +166,7 @@ void Galil::WriteEncoder() {
 int Galil::ReadEncoder() {
 	//USE QE, returns some bytes.
 	//QE0 returns encoder value of channel 0
+	return 0;
 }
 
 void Galil::setSetPoint(int s) {
