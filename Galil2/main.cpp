@@ -125,12 +125,12 @@ int testingGalil() {
 
 int main() {
 
-	//EmbeddedFunctions* Funcs = new EmbeddedFunctions;
-	//Galil* myGalil = new Galil(Funcs, "192.168.0.120 -d");
+	EmbeddedFunctions* Funcs = new EmbeddedFunctions;
+	Galil* myGalil = new Galil(Funcs, "192.168.0.120 -d");
 	//myGalil->DigitalOutput(6);
 	//std::cout << myGalil->AnalogInput(0) << std::endl;
 
-	testingGalil();
+	//testingGalil();
 
 	//char buf[1024];
 	//char command[128] = "";
@@ -141,6 +141,22 @@ int main() {
 	//GCommand(g, command, buf, sizeof(buf), 0);
 	//while (1);
 	//if (g) { GClose(g); }
-	system("PAUSE");
+
+	std::cout << "Control " << std::endl;
+	myGalil->WriteEncoder();
+
+	myGalil->setSetPoint(5000);
+	myGalil->setKd(0.0);
+	myGalil->setKi(0.0001);
+	myGalil->setKp(0.01);
+
+	myGalil->PositionControl(1, 0);
+	std::cout << "Speed Control " << std::endl;
+	myGalil->setSetPoint(200);
+	myGalil->setKd(0.0);
+	myGalil->setKi(0.0);
+	myGalil->setKp(0.02);
+
+	//system("PAUSE");
 	return G_NO_ERROR;
 }
