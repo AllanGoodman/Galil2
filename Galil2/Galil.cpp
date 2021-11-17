@@ -1,5 +1,5 @@
 #include "Galil.h"
-
+#include <bitset>
 
 Galil::Galil() {
 	g = 0;
@@ -83,17 +83,14 @@ void Galil::DigitalBitOutput(bool val, uint8_t bit) {
 uint16_t Galil::DigitalInput() {
 	//loop 16 times through digitalbitinput, getting all digital inputs.
 	uint16_t store = 0x00;
-	for (int i = 0; i < 16; i++) {
+	for (int i = 15; i > -1; i--) {
 		bool store_bit = DigitalBitInput(i);
-		std::cout << store_bit << std::endl;
 		if (store_bit == 1) {
-			(store <<= 1) | 0x1;
-			std::cout << "doin a thing" << std::endl;
+			store = ((store << 1) | 0x1);
 		}
 		else {
 			store <<= 1;
 		}
-		//std::cout << "store = " << store << std::endl;
 	}
 	return store;
 }
@@ -101,7 +98,26 @@ uint16_t Galil::DigitalInput() {
 uint8_t Galil::DigitalByteInput(bool bank) {
 	//Return high or low byte (bank = 1 or 0 respectively)
 	//Just loop through digitalbitinput 8 times for 7-0 or 15-8
-	return 0;
+	//std::cout << "bing" << std::endl;
+	uint8_t store = 0x00;
+	int initial = 0;
+	if (bank) {
+		initial = 15;
+	}
+	else {
+		initial = 8;
+	}
+	for (int i = initial; i > initial-9; i--) {
+		bool store_bit = DigitalBitInput(i);
+		if (store_bit == 1) {
+			store = ((store << 1) | 0x1);
+		}
+		else {
+			store <<= 1;
+		}
+	}
+	//std::cout << std::bitset<8>(store) << std::endl;
+	return store;
 }
 
 bool Galil::DigitalBitInput(uint8_t bit) {
@@ -110,7 +126,6 @@ bool Galil::DigitalBitInput(uint8_t bit) {
 	GSize returnedNum = 1;
 	sprintf_s(command, "MG @IN[%d];", bit);
 	Functions->GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), &returnedNum);
-	//std::cout << ReadBuffer << std::endl;
 	return (ReadBuffer[1]-48);
 }
 
@@ -127,7 +142,17 @@ bool Galil::CheckSuccessfulWrite() {
 //Analog Functions
 float Galil::AnalogInput(uint8_t channel) {
 	//USE MG @AN[channel] to return the analog values!
-	return 0;
+	char command[128] = "";
+	char floatbuf[4] = "";
+	GSize returnedNum = 1;
+	sprintf_s(command, "MG @AN[%d];", channel);
+	Functions->GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), &returnedNum);
+	floatbuf[0] = ReadBuffer[1];
+	floatbuf[1] = ReadBuffer[2];
+	floatbuf[2] = ReadBuffer[3];
+	floatbuf[3] = ReadBuffer[4];
+	float returnable = std::stof(floatbuf);
+	return returnable;
 }
 
 void Galil::AnalogOutput(uint8_t channel, double voltage) {

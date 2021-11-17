@@ -7,7 +7,7 @@ int main() {
 	EmbeddedFunctions* Funcs = new EmbeddedFunctions;
 	Galil* myGalil = new Galil(Funcs, "192.168.0.120 -d");
 	myGalil->DigitalOutput(6);
-	std::cout << myGalil->DigitalInput() << std::endl;
+	std::cout << myGalil->AnalogInput(0) << std::endl;
 
 	//char buf[1024];
 	//char command[128] = "";
