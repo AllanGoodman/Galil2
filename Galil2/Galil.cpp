@@ -61,14 +61,30 @@ void Galil::DigitalOutput(uint16_t value) {
 void Galil::DigitalByteOutput(bool bank, uint8_t value) {
 	//print high or low byte (bank = 1 or 0 respectively)
 	//Just use OP, first argument is low byte, 2nd arg is high byte
-	
+	char command[128] = "";
+	if (bank) {
+		sprintf_s(command, "OP,%d;", value);
+	}
+	else {
+		sprintf_s(command, "OP%d;", value);
+	}
+	Functions->GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), 0);
 }
 
 void Galil::DigitalBitOutput(bool val, uint8_t bit) {
 	//USE SB for val = 1
 	//USE CB for val = 0
 	//SB1 sets digital bit 1 to 1 etc
-
+	if (val) {
+		char command[128] = "";
+		sprintf_s(command, "SB%d;", bit);
+		Functions->GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), 0);
+	}
+	else {
+		char command[128] = "";
+		sprintf_s(command, "CB%d;", bit);
+		Functions->GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), 0);
+	}
 	//DOUBLE CHECK THIS!
 
 	//Maybe just use OP, but print out 
@@ -157,7 +173,7 @@ float Galil::AnalogInput(uint8_t channel) {
 
 void Galil::AnalogOutput(uint8_t channel, double voltage) {
 	char command[128];
-	sprintf_s(command, "AO %d,%f;", channel, voltage);
+	sprintf_s(command, "AO%d,%f;", channel, voltage);
 	GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), 0);
 }
 
@@ -166,6 +182,9 @@ void Galil::AnalogInputRange(uint8_t channel, uint8_t range) {
 
 	//arguments are channel, then the range (1 = +/- 5v, 2= +/- 10v, 3 = 0-5v, 4 = 0-10v)
 	//e.g. AQ0,1 sets channel 0 to range +/-5v
+	char command[128];
+	sprintf_s(command, "AQ%d,%d;", channel, range);
+	GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), 0);
 }
 
 
@@ -184,14 +203,23 @@ void Galil::WriteEncoder() {
 	Functions->GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), 0)
 		*/
 
-
+	char command[128];
+	sprintf_s(command, "WE0,0");
+	GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), 0);
 
 }
 
 int Galil::ReadEncoder() {
 	//USE QE, returns some bytes.
 	//QE0 returns encoder value of channel 0
-	return 0;
+	char command[128];
+	char intbuf[1] = "";
+	sprintf_s(command, "QE0");
+	GSize returnedNum = 1;
+	GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), &returnedNum);
+	intbuf[0] = ReadBuffer[1];
+	int returnable = atoi(intbuf);
+	return returnable;
 }
 
 void Galil::setSetPoint(int s) {
