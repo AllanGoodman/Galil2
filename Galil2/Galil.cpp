@@ -42,8 +42,8 @@ Galil::Galil(EmbeddedFunctions* Funcs, GCStringIn address) {
 Galil::~Galil() {
 	if (g) {
 		Functions->GClose(g);
-		delete Functions;
 	}
+	delete Functions;
 }
 
 
@@ -53,6 +53,7 @@ void Galil::DigitalOutput(uint16_t value) {
 	//USES OP.
 	//OP1 makes digital inputs = 1
 	//OP4 makes digital inputs = 4 etc
+	//Each channel is restricted to 255, so we swap to channel 1 if value > 255.
 	char command[128] = "";
 	if (value < 256) {
 		sprintf_s(command, "OP%d;", value);
@@ -80,22 +81,14 @@ void Galil::DigitalBitOutput(bool val, uint8_t bit) {
 	//USE SB for val = 1
 	//USE CB for val = 0
 	//SB1 sets digital bit 1 to 1 etc
+	char command[128] = "";
 	if (val) {
-		char command[128] = "";
 		sprintf_s(command, "SB%d;", bit);
-		Functions->GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), 0);
 	}
-	else {
-		char command[128] = "";
+	else {	
 		sprintf_s(command, "CB%d;", bit);
-		Functions->GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), 0);
 	}
-	//DOUBLE CHECK THIS!
-
-	//Maybe just use OP, but print out 
-	//Like if currently the digital output is 1100 (12) and we want to make bit 2 (3rd) bit 0, we send OP8 which makes it 1000
-	//maybe use char type to keep track of the binary? int bits[16] = [0, 0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0, 0, 1, 1, 0, 0]
-	//can we convert this above to a single int?
+	Functions->GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), 0);
 }
 
 
@@ -119,7 +112,6 @@ uint16_t Galil::DigitalInput() {
 uint8_t Galil::DigitalByteInput(bool bank) {
 	//Return high or low byte (bank = 1 or 0 respectively)
 	//Just loop through digitalbitinput 8 times for 7-0 or 15-8
-	//std::cout << "bing" << std::endl;
 	uint8_t store = 0x00;
 	int initial = 0;
 	if (bank) {
@@ -166,16 +158,24 @@ bool Galil::DigitalBitInput(uint8_t bit) {
 	GSize returnedNum = 1;
 	sprintf_s(command, "MG @IN[%d];", bit);
 	Functions->GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), &returnedNum);
+
+	//In order to return an bool value, we must subtract 48 to turn ASCII code into the appropriate value.
 	return (ReadBuffer[1]-48);
 }
 
 bool Galil::CheckSuccessfulWrite() {
+	bool success = false;
 	if (ReadBuffer == ":") {
-		return 1;
+		std::cout << "Successful Write!" << std::endl;
+		success = true;
 	}
 	else if (ReadBuffer == "?") {
-		return 0;
+		std::cout << "Unsuccessful Write!" << std::endl;
 	}
+	else {
+		std::cout << "Unknown ReadBuffer contents." << std::endl;
+	}
+	return success;
 }
 
 
@@ -187,12 +187,20 @@ float Galil::AnalogInput(uint8_t channel) {
 	GSize returnedNum = 1;
 	sprintf_s(command, "MG @AN[%d];", channel);
 	Functions->GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), &returnedNum);
-	floatbuf[0] = ReadBuffer[1];
-	floatbuf[1] = ReadBuffer[2];
-	floatbuf[2] = ReadBuffer[3];
-	floatbuf[3] = ReadBuffer[4];
-	float returnable = std::stof(floatbuf);
-	return returnable;
+
+	for (int i = 0; i < 4; i++) {
+		floatbuf[i] = ReadBuffer[i + 1];
+	}
+
+	return std::stof(floatbuf);
+
+
+	//floatbuf[0] = ReadBuffer[1];
+	//floatbuf[1] = ReadBuffer[2];
+	//floatbuf[2] = ReadBuffer[3];
+	//floatbuf[3] = ReadBuffer[4];
+	//float returnable = std::stof(floatbuf);
+	//return returnable;
 }
 
 void Galil::AnalogOutput(uint8_t channel, double voltage) {
