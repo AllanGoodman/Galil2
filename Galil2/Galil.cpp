@@ -111,44 +111,24 @@ uint16_t Galil::DigitalInput() {
 
 uint8_t Galil::DigitalByteInput(bool bank) {
 	//Return high or low byte (bank = 1 or 0 respectively)
-	//Just loop through digitalbitinput 8 times for 7-0 or 15-8
+	//Just loop through digitalbitinput 8 times for 0-7 or 8-15
 	uint8_t store = 0x00;
 	int initial = 0;
 	if (bank) {
-		//initial = 15;
-		for (int i = 15; i > 8; i--) {
-			bool store_bit = DigitalBitInput(i);
-			if (store_bit == 1) {
-				store = ((store << 1) | 0x1);
-			}
-			else {
-				store <<= 1;
-			}
-		}
+		initial = 8;
 	}
 	else {
-		//initial = 8;
-		for (int i = 8; i > -1; i--) {
-			bool store_bit = DigitalBitInput(i);
-			if (store_bit == 1) {
-				store = ((store << 1) | 0x1);
-			}
-			else {
-				store <<= 1;
-			}
-		}
+		initial = 0;
 	}
-	/*
-	for (int i = initial; i > initial-9; i--) {
+	for (int i = (0 + initial); i < (8 + initial); i++) {
 		bool store_bit = DigitalBitInput(i);
 		if (store_bit == 1) {
-			store = ((store << 1) | 0x1);
+			store = ((store >> 1) | 0x80);
 		}
 		else {
-			store <<= 1;
+			store >>= 1;
 		}
-	}*/
-	//std::cout << std::bitset<8>(store) << std::endl;
+	}
 	return store;
 }
 
@@ -193,14 +173,6 @@ float Galil::AnalogInput(uint8_t channel) {
 	}
 
 	return std::stof(floatbuf);
-
-
-	//floatbuf[0] = ReadBuffer[1];
-	//floatbuf[1] = ReadBuffer[2];
-	//floatbuf[2] = ReadBuffer[3];
-	//floatbuf[3] = ReadBuffer[4];
-	//float returnable = std::stof(floatbuf);
-	//return returnable;
 }
 
 void Galil::AnalogOutput(uint8_t channel, double voltage) {

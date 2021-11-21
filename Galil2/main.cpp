@@ -13,6 +13,7 @@
 // If it fails an autotest, it will give you an error at that line, go back to this function and find where it errored
 
 #include <assert.h>
+#include <bitset>
 
 void clearOutputs(Galil* g) {
 	g->DigitalOutput(0);
@@ -128,9 +129,11 @@ int main() {
 	EmbeddedFunctions* Funcs = new EmbeddedFunctions;
 	Galil* myGalil = new Galil(Funcs, "192.168.0.120 -d");
 	
-	std::cout << *myGalil;
+	//std::cout << *myGalil;
+	//std::bitset<8> byte(myGalil->DigitalByteInput(true));
+	//std::cout << byte << std::endl;
 
-	//testingGalil();
+	testingGalil();
 	/*
 	//Problem 1
 	float relationship = 0.0;
