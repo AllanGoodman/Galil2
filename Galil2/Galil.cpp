@@ -165,11 +165,11 @@ bool Galil::DigitalBitInput(uint8_t bit) {
 
 bool Galil::CheckSuccessfulWrite() {
 	bool success = false;
-	if (ReadBuffer == ":") {
+	if (ReadBuffer[0] == ':') {
 		std::cout << "Successful Write!" << std::endl;
 		success = true;
 	}
-	else if (ReadBuffer == "?") {
+	else if (ReadBuffer[0] == '?') {
 		std::cout << "Unsuccessful Write!" << std::endl;
 	}
 	else {

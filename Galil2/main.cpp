@@ -139,10 +139,11 @@ int main() {
 
 
 	//Problem 2
+	
 	std::cout << myGalil->AnalogInput(0) << std::endl;
 
 
-
+	/*
 	//Problem 3
 	
 
@@ -160,8 +161,6 @@ int main() {
 	//Problem 5
 	myGalil->WriteEncoder();
 	myGalil->CheckSuccessfulWrite();
-
-	std::cout << "Encoder: " << myGalil->ReadEncoder() << " ";
 
 	myGalil->setSetPoint(5000);
 	myGalil->setKp(1);
