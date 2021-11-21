@@ -128,8 +128,10 @@ int main() {
 	EmbeddedFunctions* Funcs = new EmbeddedFunctions;
 	Galil* myGalil = new Galil(Funcs, "192.168.0.120 -d");
 
-	//testingGalil();
+	//std::cout << *myGalil;
 
+	//testingGalil();
+	/*
 	//Problem 1
 	float relationship = 0.0;
 	relationship = myGalil->AnalogInput(0) / myGalil->DigitalInput();
@@ -144,7 +146,7 @@ int main() {
 	//Problem 3
 	
 
-
+	
 	//Problem 4
 	int value = 0;
 	std::cout << "Enter a value (0-255)" << std::endl;
@@ -153,28 +155,39 @@ int main() {
 	myGalil->DigitalByteOutput(false, value);
 	float analog_0 = myGalil->AnalogInput(0);
 	myGalil->AnalogOutput(7, analog_0);
-
-
+	*/
+	
 	//Problem 5
 	myGalil->WriteEncoder();
-	myGalil->setSetPoint(100);
+	myGalil->CheckSuccessfulWrite();
 
-	myGalil->setKp(1.0);
-	myGalil->setKi(0.0);
-	myGalil->setKd(0.0);
+	std::cout << "Encoder: " << myGalil->ReadEncoder() << " ";
+
+	myGalil->setSetPoint(5000);
+	myGalil->setKp(1);
+	myGalil->setKi(0.0001);
+	myGalil->setKd(0.25);
 	
 	myGalil->SpeedControl(1, 0);
-
+	myGalil->CheckSuccessfulWrite();
+	
+	
+	/*
 	//Problem 6
 	myGalil->WriteEncoder();
-	myGalil->setSetPoint(100);
+	myGalil->CheckSuccessfulWrite();
+
+	myGalil->setSetPoint(1000);
 
 	myGalil->setKd(1.0);
-	myGalil->setKi(0.0);
-	myGalil->setKp(0.0);
+	myGalil->setKi(0.0001);
+	myGalil->setKp(0.25);
 
 	myGalil->PositionControl(1, 0);
-
-	//system("PAUSE");
+	myGalil->CheckSuccessfulWrite();
+	*/
+	system("PAUSE");
+	delete myGalil;
+	
 	return G_NO_ERROR;
 }

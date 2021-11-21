@@ -16,8 +16,8 @@ Galil::Galil() {
 }
 
 Galil::Galil(EmbeddedFunctions* Funcs, GCStringIn address) {
+	//Functions = new EmbeddedFunctions;
 	Functions = Funcs;
-	Functions = new EmbeddedFunctions;
 	g = 0;
 	setPoint = 0;
 	
@@ -229,15 +229,9 @@ void Galil::WriteEncoder() {
 	// WE0 sets channel 0 encoder to 0
 	// WE10 sets channel 0 encoder to 10
 
-	/*
-	char command[128] = "";
-	sprintf(command, "WE %d", bit);
-	Functions->GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), 0)
-		*/
-
 	char command[128];
 	sprintf_s(command, "WE0,0");
-	GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), 0);
+	Functions->GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), 0);
 
 }
 
@@ -248,10 +242,10 @@ int Galil::ReadEncoder() {
 	char intbuf[1] = "";
 	sprintf_s(command, "QE0");
 	GSize returnedNum = 1;
-	GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), &returnedNum);
+	Functions->GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), &returnedNum);
 	intbuf[0] = ReadBuffer[1];
 	int returnable = atoi(ReadBuffer);
-	std::cout << returnable << std::endl;
+	//std::cout << returnable << std::endl;
 	return returnable;
 }
 
@@ -272,15 +266,13 @@ void Galil::setKd(double gain) {
 }
 
 
-// Operator overload for '<<' operator. So the user can say cout << Galil; This function should print out the
-		// output of GInfo and GVersion, with two newLines after each.
 std::ostream& operator<<(std::ostream& output, Galil& galil) {
-	GSize size = 128;
+	GSize size = 1;
 	GCStringOut info = "";
 	GCStringOut ver = "";
 	galil.Functions->GInfo(galil.g, info, size);
-	galil.Functions->GVersion(ver, size);
-	output << info << std::endl << std::endl;
-	output << ver << std::endl << std::endl;
+	//galil.Functions->GVersion(ver, size);
+	output << info << "\n\n";
+	output << ver << "\n\n";
 	return output;
 }
