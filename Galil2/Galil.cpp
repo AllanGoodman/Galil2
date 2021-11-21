@@ -1,4 +1,4 @@
-#include "Galil.h"
+#include "galil.h"
 #include <bitset>
 
 Galil::Galil() {

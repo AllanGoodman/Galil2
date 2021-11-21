@@ -127,35 +127,53 @@ int main() {
 
 	EmbeddedFunctions* Funcs = new EmbeddedFunctions;
 	Galil* myGalil = new Galil(Funcs, "192.168.0.120 -d");
-	//myGalil->DigitalOutput(6);
-	//std::cout << myGalil->AnalogInput(0) << std::endl;
 
 	//testingGalil();
 
-	//char buf[1024];
-	//char command[128] = "";
-	//GOpen("192.168.0.120 -d", &g);
+	//Problem 1
+	float relationship = 0.0;
+	relationship = myGalil->AnalogInput(0) / myGalil->DigitalInput();
+	std::cout << "Relationship: " << relationship << std::endl;
 
-	//sprintf_s(command, "AO0,3;");
 
-	//GCommand(g, command, buf, sizeof(buf), 0);
-	//while (1);
-	//if (g) { GClose(g); }
+	//Problem 2
+	std::cout << myGalil->AnalogInput(0) << std::endl;
 
-	std::cout << "Control " << std::endl;
+
+
+	//Problem 3
+	
+
+
+	//Problem 4
+	int value = 0;
+	std::cout << "Enter a value (0-255)" << std::endl;
+	std::cin >> value;
+	std::cout << std::endl;
+	myGalil->DigitalByteOutput(false, value);
+	float analog_0 = myGalil->AnalogInput(0);
+	myGalil->AnalogOutput(7, analog_0);
+
+
+	//Problem 5
 	myGalil->WriteEncoder();
+	myGalil->setSetPoint(100);
 
-	myGalil->setSetPoint(5000);
+	myGalil->setKp(1.0);
+	myGalil->setKi(0.0);
 	myGalil->setKd(0.0);
-	myGalil->setKi(0.0001);
-	myGalil->setKp(0.01);
+	
+	myGalil->SpeedControl(1, 0);
+
+	//Problem 6
+	myGalil->WriteEncoder();
+	myGalil->setSetPoint(100);
+
+	myGalil->setKd(1.0);
+	myGalil->setKi(0.0);
+	myGalil->setKp(0.0);
 
 	myGalil->PositionControl(1, 0);
-	std::cout << "Speed Control " << std::endl;
-	myGalil->setSetPoint(200);
-	myGalil->setKd(0.0);
-	myGalil->setKi(0.0);
-	myGalil->setKp(0.02);
 
 	//system("PAUSE");
 	return G_NO_ERROR;
