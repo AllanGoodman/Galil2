@@ -98,13 +98,13 @@ void Galil::DigitalBitOutput(bool val, uint8_t bit) {
 uint16_t Galil::DigitalInput() {
 	//loop 16 times through digitalbitinput, getting all digital inputs.
 	uint16_t store = 0x00;
-	for (int i = 0; i < 16; i++) {
+	for (int i = 15; i > -1; i--) {
 		bool store_bit = DigitalBitInput(i);
 		if (store_bit == 1) {
-			store = ((store >> 1) | 0x80);
+			store = ((store << 1) | 0x1);
 		}
 		else {
-			store >>= 1;
+			store <<= 1;
 		}
 	}
 	return store;
