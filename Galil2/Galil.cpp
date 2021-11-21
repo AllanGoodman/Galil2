@@ -31,12 +31,13 @@ Galil::Galil(EmbeddedFunctions* Funcs, GCStringIn address) {
 	
 	GReturn galilStatus;
 	galilStatus = Functions->GOpen(address, &g);
+	/*
 	if (g == G_NO_ERROR) {
 		std::cout << "Connected!" << std::endl;
 	}
 	else {
 		std::cout << "Failed to connect" << std::endl;
-	}
+	}*/
 }
 
 Galil::~Galil() {
@@ -97,13 +98,13 @@ void Galil::DigitalBitOutput(bool val, uint8_t bit) {
 uint16_t Galil::DigitalInput() {
 	//loop 16 times through digitalbitinput, getting all digital inputs.
 	uint16_t store = 0x00;
-	for (int i = 15; i > -1; i--) {
+	for (int i = 0; i < 16; i++) {
 		bool store_bit = DigitalBitInput(i);
 		if (store_bit == 1) {
-			store = ((store << 1) | 0x1);
+			store = ((store >> 1) | 0x80);
 		}
 		else {
-			store <<= 1;
+			store >>= 1;
 		}
 	}
 	return store;
@@ -114,6 +115,7 @@ uint8_t Galil::DigitalByteInput(bool bank) {
 	//Just loop through digitalbitinput 8 times for 0-7 or 8-15
 	uint8_t store = 0x00;
 	int initial = 0;
+	bool store_bit = 0;
 	if (bank) {
 		initial = 8;
 	}
@@ -121,7 +123,7 @@ uint8_t Galil::DigitalByteInput(bool bank) {
 		initial = 0;
 	}
 	for (int i = (0 + initial); i < (8 + initial); i++) {
-		bool store_bit = DigitalBitInput(i);
+		store_bit = DigitalBitInput(i);
 		if (store_bit == 1) {
 			store = ((store >> 1) | 0x80);
 		}
@@ -216,9 +218,7 @@ int Galil::ReadEncoder() {
 	GSize returnedNum = 1;
 	Functions->GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), &returnedNum);
 	intbuf[0] = ReadBuffer[1];
-	int returnable = atoi(ReadBuffer);
-	//std::cout << returnable << std::endl;
-	return returnable;
+	return atoi(ReadBuffer);
 }
 
 void Galil::setSetPoint(int s) {
