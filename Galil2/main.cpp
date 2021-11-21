@@ -127,8 +127,8 @@ int main() {
 
 	EmbeddedFunctions* Funcs = new EmbeddedFunctions;
 	Galil* myGalil = new Galil(Funcs, "192.168.0.120 -d");
-
-	//std::cout << *myGalil;
+	
+	std::cout << *myGalil;
 
 	//testingGalil();
 	/*
@@ -156,7 +156,7 @@ int main() {
 	float analog_0 = myGalil->AnalogInput(0);
 	myGalil->AnalogOutput(7, analog_0);
 	*/
-	
+	/*
 	//Problem 5
 	myGalil->WriteEncoder();
 	myGalil->CheckSuccessfulWrite();

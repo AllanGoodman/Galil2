@@ -267,11 +267,10 @@ void Galil::setKd(double gain) {
 
 
 std::ostream& operator<<(std::ostream& output, Galil& galil) {
-	GSize size = 1;
-	GCStringOut info = "";
-	GCStringOut ver = "";
-	galil.Functions->GInfo(galil.g, info, size);
-	//galil.Functions->GVersion(ver, size);
+	char info[1024];
+	char ver[1024];
+	galil.Functions->GInfo(galil.g, info, sizeof(info));
+	galil.Functions->GVersion(ver, sizeof(ver));
 	output << info << "\n\n";
 	output << ver << "\n\n";
 	return output;
