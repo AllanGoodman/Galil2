@@ -206,7 +206,7 @@ float Galil::AnalogInput(uint8_t channel) {
 void Galil::AnalogOutput(uint8_t channel, double voltage) {
 	char command[128];
 	sprintf_s(command, "AO%d,%f;", channel, voltage);
-	GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), 0);
+	Functions->GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), 0);
 }
 
 void Galil::AnalogInputRange(uint8_t channel, uint8_t range) {
@@ -216,7 +216,7 @@ void Galil::AnalogInputRange(uint8_t channel, uint8_t range) {
 	//e.g. AQ0,1 sets channel 0 to range +/-5v
 	char command[128];
 	sprintf_s(command, "AQ%d,%d;", channel, range);
-	GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), 0);
+	Functions->GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), 0);
 }
 
 
@@ -271,14 +271,16 @@ void Galil::setKd(double gain) {
 	ControlParameters[2] = gain;
 }
 
-/*
 
-No need to implement, defined in GalilControl.lib
-
-void Galil::PositionControl(bool debug, int Motorchannel) {
-	
+// Operator overload for '<<' operator. So the user can say cout << Galil; This function should print out the
+		// output of GInfo and GVersion, with two newLines after each.
+std::ostream& operator<<(std::ostream& output, Galil& galil) {
+	GSize size = 128;
+	GCStringOut info = "";
+	GCStringOut ver = "";
+	galil.Functions->GInfo(galil.g, info, size);
+	galil.Functions->GVersion(ver, size);
+	output << info << std::endl << std::endl;
+	output << ver << std::endl << std::endl;
+	return output;
 }
-
-void Galil::SpeedControl(bool debug, int Motorchannel) {
-
-}*/
