@@ -129,9 +129,10 @@ int main() {
 	EmbeddedFunctions* Funcs = new EmbeddedFunctions;
 	Galil* myGalil = new Galil(Funcs, "192.168.0.120 -d");
 	
-	//std::cout << *myGalil;
-	//std::bitset<8> byte(myGalil->DigitalByteInput(true));
-	//std::cout << byte << std::endl;
+	std::cout << *myGalil;
+	myGalil->DigitalOutput(153);
+	std::bitset<8> byte(myGalil->DigitalByteInput(false));
+	std::cout << byte << std::endl;
 
 	testingGalil();
 	/*
@@ -174,7 +175,7 @@ int main() {
 	myGalil->CheckSuccessfulWrite();
 	
 	
-	/*
+	
 	//Problem 6
 	myGalil->WriteEncoder();
 	myGalil->CheckSuccessfulWrite();

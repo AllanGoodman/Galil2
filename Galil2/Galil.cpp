@@ -1,6 +1,9 @@
 #include "galil.h"
 #include <bitset>
 
+#define COMMAND_LENGTH 128
+#define READBUF_LENGTH 1024
+
 Galil::Galil() {
 	g = 0;
 	setPoint = 0;
@@ -16,12 +19,12 @@ Galil::Galil() {
 }
 
 Galil::Galil(EmbeddedFunctions* Funcs, GCStringIn address) {
-	//Functions = new EmbeddedFunctions;
+	Functions = new EmbeddedFunctions;
 	Functions = Funcs;
 	g = 0;
 	setPoint = 0;
 	
-	for (int i = 0; i < 1024; i++) {
+	for (int i = 0; i < READBUF_LENGTH; i++) {
 		ReadBuffer[i] = { NULL };
 	}
 	
@@ -31,13 +34,6 @@ Galil::Galil(EmbeddedFunctions* Funcs, GCStringIn address) {
 	
 	GReturn galilStatus;
 	galilStatus = Functions->GOpen(address, &g);
-	/*
-	if (g == G_NO_ERROR) {
-		std::cout << "Connected!" << std::endl;
-	}
-	else {
-		std::cout << "Failed to connect" << std::endl;
-	}*/
 }
 
 Galil::~Galil() {
@@ -55,7 +51,7 @@ void Galil::DigitalOutput(uint16_t value) {
 	//OP1 makes digital inputs = 1
 	//OP4 makes digital inputs = 4 etc
 	//Each channel is restricted to 255, so we swap to channel 1 if value > 255.
-	char command[128] = "";
+	char command[COMMAND_LENGTH] = "";
 	if (value < 256) {
 		sprintf_s(command, "OP%d;", value);
 	}
@@ -68,7 +64,7 @@ void Galil::DigitalOutput(uint16_t value) {
 void Galil::DigitalByteOutput(bool bank, uint8_t value) {
 	//print high or low byte (bank = 1 or 0 respectively)
 	//Just use OP, first argument is low byte, 2nd arg is high byte
-	char command[128] = "";
+	char command[COMMAND_LENGTH] = "";
 	if (bank) {
 		sprintf_s(command, "OP,%d;", value);
 	}
@@ -82,7 +78,7 @@ void Galil::DigitalBitOutput(bool val, uint8_t bit) {
 	//USE SB for val = 1
 	//USE CB for val = 0
 	//SB1 sets digital bit 1 to 1 etc
-	char command[128] = "";
+	char command[COMMAND_LENGTH] = "";
 	if (val) {
 		sprintf_s(command, "SB%d;", bit);
 	}
@@ -116,12 +112,15 @@ uint8_t Galil::DigitalByteInput(bool bank) {
 	uint8_t store = 0x00;
 	int initial = 0;
 	bool store_bit = 0;
+	//Select the start position for the bit scanning according to the selected byte
 	if (bank) {
 		initial = 8;
 	}
 	else {
 		initial = 0;
 	}
+
+	//Loop through the digital inputs, creating a byte using bitwise operations 
 	for (int i = (0 + initial); i < (8 + initial); i++) {
 		store_bit = DigitalBitInput(i);
 		if (store_bit == 1) {
@@ -136,10 +135,9 @@ uint8_t Galil::DigitalByteInput(bool bank) {
 
 bool Galil::DigitalBitInput(uint8_t bit) {
 	//Read a bit from one of the digital inputs specified by bit.
-	char command[128] = "";
-	GSize returnedNum = 1;
+	char command[COMMAND_LENGTH] = "";
 	sprintf_s(command, "MG @IN[%d];", bit);
-	Functions->GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), &returnedNum);
+	Functions->GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), 0);
 
 	//In order to return an bool value, we must subtract 48 to turn ASCII code into the appropriate value.
 	return (ReadBuffer[1]-48);
@@ -164,12 +162,12 @@ bool Galil::CheckSuccessfulWrite() {
 //Analog Functions
 float Galil::AnalogInput(uint8_t channel) {
 	//USE MG @AN[channel] to return the analog values!
-	char command[128] = "";
+	char command[COMMAND_LENGTH] = "";
 	char floatbuf[4] = "";
-	GSize returnedNum = 1;
 	sprintf_s(command, "MG @AN[%d];", channel);
-	Functions->GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), &returnedNum);
+	Functions->GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), 0);
 
+	//Load the value and 2 decimal places into floatbuf for conversion into a float
 	for (int i = 0; i < 4; i++) {
 		floatbuf[i] = ReadBuffer[i + 1];
 	}
@@ -178,17 +176,15 @@ float Galil::AnalogInput(uint8_t channel) {
 }
 
 void Galil::AnalogOutput(uint8_t channel, double voltage) {
-	char command[128];
+	char command[COMMAND_LENGTH];
 	sprintf_s(command, "AO%d,%f;", channel, voltage);
 	Functions->GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), 0);
 }
 
 void Galil::AnalogInputRange(uint8_t channel, uint8_t range) {
-	//USE AQ
-
 	//arguments are channel, then the range (1 = +/- 5v, 2= +/- 10v, 3 = 0-5v, 4 = 0-10v)
 	//e.g. AQ0,1 sets channel 0 to range +/-5v
-	char command[128];
+	char command[COMMAND_LENGTH];
 	sprintf_s(command, "AQ%d,%d;", channel, range);
 	Functions->GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), 0);
 }
@@ -202,22 +198,14 @@ void Galil::WriteEncoder() {
 
 	// WE0 sets channel 0 encoder to 0
 	// WE10 sets channel 0 encoder to 10
-
-	char command[128];
-	sprintf_s(command, "WE0,0;");
-	Functions->GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), 0);
+	Functions->GCommand(g, "WE0,0;", ReadBuffer, sizeof(ReadBuffer), 0);
 
 }
 
 int Galil::ReadEncoder() {
 	//USE QE, returns some bytes.
 	//QE0 returns encoder value of channel 0
-	char command[128];
-	//char intbuf[1] = "";
-	sprintf_s(command, "QE0;");
-	GSize returnedNum = 1;
-	Functions->GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), &returnedNum);
-	//intbuf[0] = ReadBuffer[1];
+	Functions->GCommand(g, "QE0;", ReadBuffer, sizeof(ReadBuffer), 0);
 	return atoi(ReadBuffer);
 }
 
@@ -239,8 +227,8 @@ void Galil::setKd(double gain) {
 
 
 std::ostream& operator<<(std::ostream& output, Galil& galil) {
-	char info[1024];
-	char ver[1024];
+	char info[READBUF_LENGTH];
+	char ver[READBUF_LENGTH];
 	galil.Functions->GInfo(galil.g, info, sizeof(info));
 	galil.Functions->GVersion(ver, sizeof(ver));
 	output << info << "\n\n";
