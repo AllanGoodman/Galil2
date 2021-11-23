@@ -204,7 +204,7 @@ void Galil::WriteEncoder() {
 	// WE10 sets channel 0 encoder to 10
 
 	char command[128];
-	sprintf_s(command, "WE0,0");
+	sprintf_s(command, "WE0,0;");
 	Functions->GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), 0);
 
 }
@@ -213,11 +213,11 @@ int Galil::ReadEncoder() {
 	//USE QE, returns some bytes.
 	//QE0 returns encoder value of channel 0
 	char command[128];
-	char intbuf[1] = "";
-	sprintf_s(command, "QE0");
+	//char intbuf[1] = "";
+	sprintf_s(command, "QE0;");
 	GSize returnedNum = 1;
 	Functions->GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), &returnedNum);
-	intbuf[0] = ReadBuffer[1];
+	//intbuf[0] = ReadBuffer[1];
 	return atoi(ReadBuffer);
 }
 
