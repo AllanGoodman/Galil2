@@ -134,6 +134,9 @@ int main() {
 	std::bitset<8> byte(myGalil->DigitalByteInput(false));
 	std::cout << byte << std::endl;
 
+	std::bitset<8> byte2(myGalil->DigitalInput());
+	std::cout << byte2 << std::endl;
+
 	testingGalil();
 	/*
 	//Problem 1
