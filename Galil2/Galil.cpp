@@ -57,12 +57,7 @@ void Galil::DigitalOutput(uint16_t value) {
 	bytes[0] = value >> 8; // high byte
 	bytes[1] = value & 0x00FF; // low byte
 
-	if (value < 256) {
-		sprintf_s(command, "OP%d;", value);
-	}
-	else {
-		sprintf_s(command, "OP%d,%d;", bytes[1], bytes[0]);
-	}
+	sprintf_s(command, "OP%d,%d;", bytes[1], bytes[0]);
 	Functions->GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), 0);
 }
 
