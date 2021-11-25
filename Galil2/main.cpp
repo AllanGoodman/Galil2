@@ -8,6 +8,10 @@ int main() {
 
 	//galilTasks->DigitalOutput(379);
 	galilTasks->DigitalByteOutput(true, 205);
+	//std::cout << galilTasks->DigitalInput() << std::endl;
+	//std::cout << galilTasks->DigitalBitInput(3) << std::endl;
+	std::cout << std::bitset<8>(galilTasks->DigitalByteInput(false)) << std::endl;
+	system("PAUSE");
 	/*
 	//Task 9
 	char ledChar;
