@@ -52,11 +52,16 @@ void Galil::DigitalOutput(uint16_t value) {
 	//OP4 makes digital inputs = 4 etc
 	//Each channel is restricted to 255, so we swap to channel 1 if value > 255.
 	char command[COMMAND_LENGTH] = "";
+
+	uint8_t bytes[2];
+	bytes[0] = value >> 8; // high byte
+	bytes[1] = value & 0x00FF; // low byte
+
 	if (value < 256) {
 		sprintf_s(command, "OP%d;", value);
 	}
 	else {
-		sprintf_s(command, "OP255,%d;", (value - 255));
+		sprintf_s(command, "OP%d,%d;", bytes[1], bytes[0]);
 	}
 	Functions->GCommand(g, command, ReadBuffer, sizeof(ReadBuffer), 0);
 }

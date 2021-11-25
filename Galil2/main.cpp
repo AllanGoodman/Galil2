@@ -5,7 +5,10 @@
 int main() {
 	EmbeddedFunctions* Funcs = new EmbeddedFunctions;
 	Galil* galilTasks = new Galil(Funcs, "192.168.0.120 -d");
-	
+
+	//galilTasks->DigitalOutput(379);
+	galilTasks->DigitalByteOutput(true, 205);
+	/*
 	//Task 9
 	char ledChar;
 	//Clear all outputs
@@ -57,6 +60,6 @@ int main() {
 
 		exitChar = _getch();
 	}
-	
+	*/
 	return 0;
 }
